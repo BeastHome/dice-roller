@@ -1,0 +1,12 @@
+# Go build outputs
+*.exe
+*.exe~
+*.out
+*.test
+
+# Common local build folders
+bin/
+dist/
+
+# Coverage artifacts
+coverage.out
