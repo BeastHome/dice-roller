@@ -25,7 +25,7 @@ func PrintHelp() {
 	fmt.Println("  dice-roller 2d20kh1 3d8! 5d10>=8 --no-color")
 	fmt.Println()
 
-	for _, line := range dice.HelpText {
+	for _, line := range dice.HelpLines() {
 		fmt.Println(line)
 	}
 

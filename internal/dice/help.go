@@ -1,5 +1,7 @@
 package dice
 
+import "fmt"
+
 // HelpText is the unified help content shared by CLI and TUI.
 var HelpText = []string{
 	"Core Syntax:",
@@ -42,4 +44,15 @@ var HelpText = []string{
 	"  --multi N    repeat expression N times",
 	"  --help       show this help message",
 	"  --version    show version information",
+}
+
+// HelpLines returns shared help content with runtime-specific storage details.
+func HelpLines() []string {
+	lines := append([]string{}, HelpText...)
+	lines = append(lines,
+		"",
+		"Storage:",
+		fmt.Sprintf("  Session log/history files: %s", HistoryDir()),
+	)
+	return lines
 }

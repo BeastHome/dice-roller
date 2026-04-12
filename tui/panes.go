@@ -55,9 +55,10 @@ func (a *app) drawInput(x1, y1, x2, y2 int) {
 }
 
 func buildHelpLines() []styledLine {
-	lines := make([]styledLine, 0, len(dice.HelpText))
+	help := dice.HelpLines()
+	lines := make([]styledLine, 0, len(help))
 
-	for _, line := range dice.HelpText {
+	for _, line := range help {
 		switch {
 		case line == "":
 			lines = append(lines, styledLine{text: "", style: styleHelpLabel})

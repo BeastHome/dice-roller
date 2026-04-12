@@ -69,7 +69,7 @@ func (a *app) setOutputError(err error) {
 func (a *app) handleMetaCommand(raw string) bool {
 	switch raw {
 	case "--help", "-h":
-		a.outputLines = append([]string{"Dice Roller Help", ""}, dice.HelpText...)
+		a.outputLines = append([]string{"Dice Roller Help", ""}, dice.HelpLines()...)
 		a.clearInput()
 		a.outputOffset = 0
 		return true
