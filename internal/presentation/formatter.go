@@ -175,19 +175,21 @@ func (f *ColoredFormatter) FormatCompactMulti(mr dice.MultiRollResult) string {
 		}
 	}
 
-	totalsStr := "Totals: "
+	var totalsSb strings.Builder
+	totalsSb.WriteString(f.colors.Col(f.colors.Stats, "Totals:"))
+	totalsSb.WriteString(f.colors.Col(f.colors.Stats, " "))
 	for i, r := range mr.Rolls {
 		if i > 0 {
-			totalsStr += " "
+			totalsSb.WriteString(f.colors.Col(f.colors.Stats, " "))
 		}
 		if i == maxIdx {
-			totalsStr += f.colors.Col(f.colors.Reverse, fmt.Sprintf("%d", r.Total))
+			totalsSb.WriteString(f.colors.Col(f.colors.Stats, f.colors.Col(f.colors.Reverse, fmt.Sprintf("%d", r.Total))))
 		} else {
-			totalsStr += fmt.Sprintf("%d", r.Total)
+			totalsSb.WriteString(f.colors.Col(f.colors.Stats, fmt.Sprintf("%d", r.Total)))
 		}
 	}
 
-	return fmt.Sprintf("%s\n%s", header, f.colors.Col(f.colors.Stats, totalsStr))
+	return fmt.Sprintf("%s\n%s", header, totalsSb.String())
 }
 
 // FormatVerboseSingle returns a detailed breakdown with semantic colors
@@ -249,7 +251,6 @@ func (f *ColoredFormatter) FormatVerboseMulti(mr dice.MultiRollResult) string {
 	)
 
 	// Build totals line
-	totalsStr := "Totals: "
 	maxTotal := mr.Rolls[0].Total
 	maxIdx := 0
 	for i, r := range mr.Rolls {
@@ -257,19 +258,24 @@ func (f *ColoredFormatter) FormatVerboseMulti(mr dice.MultiRollResult) string {
 			maxTotal = r.Total
 			maxIdx = i
 		}
+	}
+	var totalsSb strings.Builder
+	totalsSb.WriteString(f.colors.Col(f.colors.Stats, "Totals:"))
+	totalsSb.WriteString(f.colors.Col(f.colors.Stats, " "))
+	for i, r := range mr.Rolls {
 		if i > 0 {
-			totalsStr += " "
+			totalsSb.WriteString(f.colors.Col(f.colors.Stats, " "))
 		}
 		if i == maxIdx {
-			totalsStr += f.colors.Col(f.colors.Reverse, fmt.Sprintf("%d", r.Total))
+			totalsSb.WriteString(f.colors.Col(f.colors.Stats, f.colors.Col(f.colors.Reverse, fmt.Sprintf("%d", r.Total))))
 		} else {
-			totalsStr += fmt.Sprintf("%d", r.Total)
+			totalsSb.WriteString(f.colors.Col(f.colors.Stats, fmt.Sprintf("%d", r.Total)))
 		}
 	}
 
 	var sb strings.Builder
 	sb.WriteString(header)
-	sb.WriteString(f.colors.Col(f.colors.Stats, totalsStr))
+	sb.WriteString(totalsSb.String())
 	sb.WriteString("\n\n")
 
 	// Detail for each roll
