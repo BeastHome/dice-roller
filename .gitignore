@@ -6,6 +6,7 @@
 
 # Common local build folders
 bin/
+build/
 dist/
 
 # Coverage artifacts
