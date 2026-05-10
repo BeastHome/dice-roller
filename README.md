@@ -140,3 +140,12 @@ go build -o dice-roller .
 ```
 
 Requires Go 1.24+.
+
+---
+
+## Project Docs
+
+- [CHARTER.md](CHARTER.md)
+- [SEMANTIC_DECISIONS.md](SEMANTIC_DECISIONS.md)
+- [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)
+- [CHANGELOG.md](CHANGELOG.md)
