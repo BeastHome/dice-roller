@@ -20,8 +20,10 @@ Build a dependable, scriptable dice expression evaluator with both terminal-inte
 - Dice notation: NdX, dX, arithmetic, grouping.
 - Modifiers: keep/drop, exploding, rerolls, success counting.
 - Multi-roll: inline `rolls=N` and CLI `--multi N`.
+- Deterministic seeding via `--seed N` and `dice.NewEngineWithSeed` (v2.1.0+).
 - TUI panes: input, output, history.
 - Session history persisted as line-delimited JSON entries.
+- Engine importable by external Go projects as `github.com/showr/dice-roller/dice` (v2.1.0+); embedded-use contract is documented in [EMBEDDING.md](EMBEDDING.md).
 
 ## Non-Goals (for now)
 - Networked/shared sessions.

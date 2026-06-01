@@ -22,10 +22,10 @@ This document records behavioral decisions for dice-roller so future changes sta
 - Decision: `rolls=N` and `--multi N` represent the same behavior. Explicit flag parsing remains first-class.
 - Rationale: Supports both shell workflows and familiar inline RPG notation.
 
-## SD-005: Parser/evaluator fallback path is allowed
+## SD-005: AST evaluator preferred; legacy single-term evaluator is a fallback
 - Status: accepted
-- Decision: Engine may attempt parse-tree evaluation first, then fall back to AST parsing/evaluation.
-- Rationale: Preserves compatibility while parser internals evolve.
+- Decision: `Engine.RollOnce` first tries the AST path (`parser_rd.go` → `eval_ast.go`), which handles arithmetic, grouping, unary operators, and dice terms uniformly. Only when the AST parser cannot recognize the input does the engine fall back to the legacy regex parser (`parser.go` + `parser_modifiers.go`) feeding the single-dice-term evaluator (`roller.go::EvaluateSingle`).
+- Rationale: The AST path is the primary, full-featured evaluator. The legacy path remains in-tree as a safety net for any grammar the AST parser can't yet handle and as a self-contained reference for the single-dice-term case. Errors from a successful AST parse (e.g., division by zero) are returned directly — they are NOT masked by retrying the legacy path. (Earlier wording of this decision referred to "parse-tree vs AST" as if they were distinct strategies; both paths are AST-based — the distinction is full arithmetic-aware AST vs legacy single-term-flat evaluator. Reworded in v2.1.0.)
 
 ## SD-006: Verbose output is presentation-only
 - Status: accepted

@@ -2,7 +2,7 @@
 
 A terminal-based dice roller for tabletop RPGs. Supports a full dice notation syntax with modifiers, a text UI (TUI), and a CLI mode for scripted use.
 
-**Version:** 2.0.0
+**Version:** 2.1.0
 
 ---
 
@@ -18,8 +18,8 @@ A terminal-based dice roller for tabletop RPGs. Supports a full dice notation sy
 ## CLI Usage
 
 ```
-dice-roller <expression> [--verbose] [--multi N] [--no-color]
-dice-roller "<expression> rolls=N" [--verbose] [--no-color]
+dice-roller <expression> [--verbose] [--multi N] [--no-color] [--seed N]
+dice-roller "<expression> rolls=N" [--verbose] [--no-color] [--seed N]
 ```
 
 ### Flags
@@ -28,6 +28,7 @@ dice-roller "<expression> rolls=N" [--verbose] [--no-color]
 |------|-------------|
 | `--verbose` | Show full roll breakdown (rerolls, explosions, kept/dropped) |
 | `--multi N` | Repeat the expression N times |
+| `--seed N` | Seed the RNG for deterministic output across the invocation |
 | `--no-color` | Disable ANSI color output |
 | `--help` | Show help text |
 | `--version` | Show version |
@@ -39,6 +40,30 @@ Multiple expressions can be passed and are evaluated in sequence:
 ```
 dice-roller 2d20kh1 3d8! 5d10>=8 --no-color
 ```
+
+If a single expression in a batch fails to parse or evaluate, the
+error goes to stderr and the remaining expressions still run. The
+process exit code is non-zero whenever any expression failed, so
+scripts can branch on it.
+
+### Multi-roll precedence
+
+`--multi N` and the inline `rolls=N` suffix express the same idea
+(repeat the expression N times). When both are present, the `--multi`
+flag wins — `rolls=N` is only applied if `--multi` is at its default
+of 1. Pick whichever fits your invocation; don't mix them.
+
+### Deterministic output
+
+With `--seed N`, the entire invocation — including all expressions and
+all repetitions under `--multi` — is reproducible:
+
+```
+dice-roller 4d6k3 --multi 5 --seed 42 --no-color
+```
+
+…produces the same five totals every time you run it. The seed is a
+signed integer; any non-zero value works.
 
 ---
 
@@ -67,17 +92,24 @@ dice-roller 2d20kh1 3d8! 5d10>=8 --no-color
 
 | Syntax | Meaning |
 |--------|---------|
-| `NdX!` | Explode on max value |
+| `NdX!` | Explode on max value (single pass — exploded dice don't re-explode) |
 | `NdX!T` | Explode on >= T |
-| `NdX!!` | Compound explode on max value |
+| `NdX!>T` | Same as `NdX!T`; alternate form accepted by the parser |
+| `NdX!!` | Compound explode on max value (recursive — exploded dice can chain) |
+
+Compound explode is bounded at 1000 expansions per roll to guard
+against degenerate RNGs; an error is returned if the cap is hit.
 
 ### Rerolls
 
 | Syntax | Meaning |
 |--------|---------|
-| `NdXrT` | Reroll values <= T (replace) |
-| `NdXroT` | Reroll once |
-| `NdXraT` | Reroll and add (accumulate) |
+| `NdXrT` | Reroll values <= T once; the new value replaces the original |
+| `NdXroT` | Reroll once; same single-pass semantics as `r` (the surfaced reroll values are tracked differently for display purposes) |
+| `NdXraT` | Reroll values <= T once and *add* — the new die is appended rather than replacing the original |
+
+All reroll variants are single-pass — a qualifying die is rerolled
+exactly once, even if the replacement value would also qualify.
 
 ### Success Counting
 
@@ -140,6 +172,9 @@ go build -o dice-roller .
 ```
 
 Requires Go 1.24+.
+
+For the test and lint gates contributors run before committing, see
+[AGENTS.md § Build, test, lint](AGENTS.md#build-test-lint).
 
 ---
 
