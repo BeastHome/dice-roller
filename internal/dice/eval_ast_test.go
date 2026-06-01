@@ -8,7 +8,7 @@ import (
 func TestEngineRoll_EvaluatesArithmeticDiceExpression(t *testing.T) {
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
 
-	res, err := engine.Roll("1d1+2d1")
+	res, err := engine.RollOnce("1d1+2d1")
 	if err != nil {
 		t.Fatalf("Roll returned error: %v", err)
 	}
@@ -24,7 +24,7 @@ func TestEngineRoll_EvaluatesArithmeticDiceExpression(t *testing.T) {
 func TestEngineRoll_EvaluatesGroupedArithmeticExpression(t *testing.T) {
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
 
-	res, err := engine.Roll("(d1+2)*3")
+	res, err := engine.RollOnce("(d1+2)*3")
 	if err != nil {
 		t.Fatalf("Roll returned error: %v", err)
 	}
@@ -39,7 +39,7 @@ func TestEngineRoll_DivisionByZeroReturnsEvalError(t *testing.T) {
 	// successfully but evaluation fails, the eval error is returned
 	// directly rather than masked by a fallback to the legacy parser.
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
-	_, err := engine.Roll("1d1 / (1d1 - 1)")
+	_, err := engine.RollOnce("1d1 / (1d1 - 1)")
 	if err == nil {
 		t.Fatalf("expected error from division by zero, got nil")
 	}
@@ -50,7 +50,7 @@ func TestEngineRoll_DivisionByZeroReturnsEvalError(t *testing.T) {
 
 func TestEngineRoll_UnaryMinusNegatesTotal(t *testing.T) {
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
-	res, err := engine.Roll("-1d1")
+	res, err := engine.RollOnce("-1d1")
 	if err != nil {
 		t.Fatalf("Roll returned error: %v", err)
 	}
@@ -61,7 +61,7 @@ func TestEngineRoll_UnaryMinusNegatesTotal(t *testing.T) {
 
 func TestEngineRoll_GroupedLiteralEvaluatesInner(t *testing.T) {
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
-	res, err := engine.Roll("(5)")
+	res, err := engine.RollOnce("(5)")
 	if err != nil {
 		t.Fatalf("Roll returned error: %v", err)
 	}

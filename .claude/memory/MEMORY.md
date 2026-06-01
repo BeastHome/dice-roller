@@ -6,3 +6,4 @@
 - [Feedback: no PowerShell UTF-8 rewrites](feedback-no-powershell-utf8-rewrites.md) — `Get-Content`/`Set-Content` corrupts non-ASCII; use `Edit` or `\u{}` escapes.
 - [Reference: memory layout](reference-memory-layout.md) — canonical memory location is this directory; AGENTS.md / CLAUDE.md layered pattern.
 - [Project: drift-check hook](project-drift-check-hook.md) — pre-commit hook depends on `S:/Dev/dev-tools/project-check.py` + a shared venv.
+- [Feedback: engine API naming](feedback-engine-api-naming.md) — engine methods are `RollOnce` / `RollN`; never bare `Roll`.

@@ -351,7 +351,7 @@ func TestEngineRoll_CompoundExplodePropagatesDepthError(t *testing.T) {
 	// End-to-end: 1d1!! through Engine.Roll should surface the
 	// max-depth error rather than hanging or masking it.
 	engine := NewEngineWithSeed(1)
-	_, err := engine.Roll("1d1!!")
+	_, err := engine.RollOnce("1d1!!")
 	if err == nil {
 		t.Fatalf("expected max-depth error through Engine.Roll, got nil")
 	}

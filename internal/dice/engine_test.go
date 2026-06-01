@@ -14,11 +14,11 @@ func TestEngineRoll_DeterministicWithSameSeed(t *testing.T) {
 	exprs := []string{"4d6", "2d20", "1d100", "5d10", "8d8"}
 	var rollsA, rollsB []int
 	for _, e := range exprs {
-		ra, err := a.Roll(e)
+		ra, err := a.RollOnce(e)
 		if err != nil {
 			t.Fatalf("engine A roll %q: %v", e, err)
 		}
-		rb, err := b.Roll(e)
+		rb, err := b.RollOnce(e)
 		if err != nil {
 			t.Fatalf("engine B roll %q: %v", e, err)
 		}
@@ -36,11 +36,11 @@ func TestNewEngineWithSeed_ProducesDeterministicSequence(t *testing.T) {
 	a := NewEngineWithSeed(99)
 	b := NewEngineWithSeed(99)
 	for i := 0; i < 10; i++ {
-		ra, err := a.Roll("1d100")
+		ra, err := a.RollOnce("1d100")
 		if err != nil {
 			t.Fatalf("iter %d: engine A roll: %v", i, err)
 		}
-		rb, err := b.Roll("1d100")
+		rb, err := b.RollOnce("1d100")
 		if err != nil {
 			t.Fatalf("iter %d: engine B roll: %v", i, err)
 		}
@@ -61,8 +61,8 @@ func TestEngineRoll_DifferentSeedsProduceDifferentSequences(t *testing.T) {
 	ra := make([]int, trials)
 	rb := make([]int, trials)
 	for i := 0; i < trials; i++ {
-		resA, _ := a.Roll("1d100")
-		resB, _ := b.Roll("1d100")
+		resA, _ := a.RollOnce("1d100")
+		resB, _ := b.RollOnce("1d100")
 		ra[i] = resA.Total
 		rb[i] = resB.Total
 	}

@@ -49,8 +49,13 @@ This document records behavioral decisions for dice-roller so future changes sta
 
 ## SD-010: Engine is single-goroutine; callers serialize concurrency
 - Status: accepted
-- Decision: `dice.Engine` holds a `*rand.Rand` and takes no internal locks. Each goroutine that calls `Roll` / `RollMany` must have its own Engine, or callers must serialize access with their own mutex.
+- Decision: `dice.Engine` holds a `*rand.Rand` and takes no internal locks. Each goroutine that calls `RollOnce` / `RollN` must have its own Engine, or callers must serialize access with their own mutex.
 - Rationale: Most consumers (CLI, TUI, turn-based games) are single-goroutine and shouldn't pay the cost of lock contention. Concurrent callers can wrap an Engine with a Mutex or construct one Engine per goroutine — both are cheap. If/when a concurrent-by-default constructor is needed it can be added as `NewSyncEngine` without disturbing the existing API.
+
+## SD-012: Engine API uses suffixed method names (RollOnce, RollN)
+- Status: accepted
+- Decision: The typed evaluation methods on `dice.Engine` are named `RollOnce(expr string) (Result, error)` and `RollN(expr string, count int) (MultiRollResult, error)`. Avoid the unsuffixed `Roll` form.
+- Rationale: Embedded consumers (e.g., the roguelike that imports this engine) need an unambiguous name for the single-roll case; a bare `Roll` is overloaded in common parlance and easy to confuse with batch operations. The matched pair `RollOnce` / `RollN` makes intent explicit at every call site and mirrors the audit-doc proposal. This decision overrides the original Slice C naming (`Roll` / `RollMany`) which surfaced the ambiguity in roguelike adoption.
 
 ## SD-011: Arithmetic is the AST evaluator's responsibility
 - Status: accepted

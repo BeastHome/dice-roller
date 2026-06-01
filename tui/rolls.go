@@ -44,7 +44,7 @@ func (a *app) handleEnter() {
 	}
 
 	if count <= 1 {
-		r, err := a.engine.Roll(expr)
+		r, err := a.engine.RollOnce(expr)
 		if err != nil {
 			a.setOutputError(err)
 			return
@@ -54,7 +54,7 @@ func (a *app) handleEnter() {
 		return
 	}
 
-	mr, err := a.engine.RollMany(expr, count)
+	mr, err := a.engine.RollN(expr, count)
 	if err != nil {
 		a.setOutputError(err)
 		return

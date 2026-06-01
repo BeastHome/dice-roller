@@ -79,7 +79,7 @@ func RunCLI(args []string, stdout, stderr io.Writer) int {
 	exitCode := 0
 	for _, expr := range parsed.Expressions {
 		if parsed.Multi <= 1 {
-			r, err := engine.Roll(expr)
+			r, err := engine.RollOnce(expr)
 			if err != nil {
 				fmt.Fprintf(stderr, "Error evaluating %q: %v\n", expr, err)
 				exitCode = 1
@@ -93,7 +93,7 @@ func RunCLI(args []string, stdout, stderr io.Writer) int {
 			continue
 		}
 
-		mr, err := engine.RollMany(expr, parsed.Multi)
+		mr, err := engine.RollN(expr, parsed.Multi)
 		if err != nil {
 			fmt.Fprintf(stderr, "Error evaluating %q: %v\n", expr, err)
 			exitCode = 1
