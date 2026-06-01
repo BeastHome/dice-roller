@@ -1,7 +1,7 @@
 # Embedding the dice engine
 
 This document is for external consumers who want to import the dice
-engine — `github.com/showr/dice-roller/dice` — into another Go project
+engine — `github.com/BeastHome/dice-roller/dice` — into another Go project
 (games, simulators, analytics, scripts, …). It describes the stable
 API surface, the contracts it makes (determinism, thread-safety, error
 handling), and the surface area that's exported but not part of the
@@ -21,7 +21,7 @@ package main
 import (
     "fmt"
 
-    "github.com/showr/dice-roller/dice"
+    "github.com/BeastHome/dice-roller/dice"
 )
 
 func main() {

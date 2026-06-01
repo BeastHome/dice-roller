@@ -13,7 +13,7 @@ reference, and platform-specific paths live in [README.md](README.md).
 
 ## Workspace layout
 
-Single Go module (`github.com/showr/dice-roller`, Go 1.24). Layout:
+Single Go module (`github.com/BeastHome/dice-roller`, Go 1.24). Layout:
 
 - `main.go` — entrypoint: handles `--help` / `--version`, dispatches to TUI
   (no args) or CLI (with args).
@@ -21,7 +21,7 @@ Single Go module (`github.com/showr/dice-roller`, Go 1.24). Layout:
 - `tui/` — tcell-based three-pane TUI (input / output / history), layout,
   event handling, rendering, history pane wiring.
 - `dice/` — dice engine, **public package** importable by external
-  consumers as `github.com/showr/dice-roller/dice`. Two parse/eval
+  consumers as `github.com/BeastHome/dice-roller/dice`. Two parse/eval
   paths exist:
   - **AST path**: recursive-descent parser (`parser_rd.go`) produces an
     AST (`ast_nodes.go`); `eval_ast.go` evaluates it directly, including

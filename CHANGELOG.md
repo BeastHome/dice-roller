@@ -16,7 +16,7 @@ and a handful of latent bugs are fixed.
   it in 2.0 but it never reached the engine — output was always time-
   seeded. With this release, `dice-roller 4d6k3 --multi 5 --seed 42`
   produces the same five totals every run.
-- **Public engine package** at `github.com/showr/dice-roller/dice`.
+- **Public engine package** at `github.com/BeastHome/dice-roller/dice`.
   The dice engine (`internal/dice` in 2.0) was promoted out of
   `internal/`, making it importable by external Go projects. See
   [EMBEDDING.md](EMBEDDING.md) for the stable API surface, thread-
