@@ -20,9 +20,17 @@ Single Go module (`github.com/showr/dice-roller`, Go 1.24). Layout:
 - `cmd/cli/` — CLI runner (`RunCLI`, `PrintHelp`).
 - `tui/` — tcell-based three-pane TUI (input / output / history), layout,
   event handling, rendering, history pane wiring.
-- `internal/dice/` — dice engine: lexer, two parser paths (recursive-descent
-  and AST), evaluator, modifiers (keep/drop, explode, reroll, success),
-  multi-roll, verbose breakdowns, platform-specific history paths, version.
+- `internal/dice/` — dice engine. Two parse/eval paths exist:
+  - **AST path**: recursive-descent parser (`parser_rd.go`) produces an
+    AST (`ast_nodes.go`); `eval_ast.go` evaluates it directly, including
+    arithmetic, grouping, and unary ops.
+  - **Legacy path**: regex-based parser (`parser.go` + `parser_modifiers.go`)
+    produces a flat `Expression`; `roller.go::EvaluateSingle` evaluates a
+    single dice term with its modifiers. `bridge.go` lets the AST parser
+    feed this evaluator for the dice-only case.
+  Other contents: lexer/tokens, modifiers (keep/drop, explode, reroll,
+  success), multi-roll, verbose breakdowns, platform-specific history
+  paths, version.
 - `internal/parse/` — input normalization shared by CLI and TUI (lowercase,
   spacing, grouping, flag extraction).
 - `internal/history/` — persistent session history store (line-delimited
@@ -93,9 +101,10 @@ Each commit should:
 - avoid mixing unrelated refactors with feature work
 
 `go vet ./...` is treated as a gate — don't land a commit that regresses
-it. The dice engine has both a recursive-descent parser and an AST path
+it. The dice engine has both an AST path and a legacy regex/flat path
 (SD-005); when touching either, run `go test ./internal/dice/...` to
-exercise both bridges.
+exercise both. The pre-commit hook runs a separate drift check —
+see [[project-drift-check-hook]] for the dependency.
 
 ## Things to avoid
 
