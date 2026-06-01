@@ -14,7 +14,11 @@ type stubStore struct {
 	sessionExpr     string
 }
 
-func (s *stubStore) Append(result interface{}) error {
+func (s *stubStore) AppendSingle(r dice.Result) error {
+	return nil
+}
+
+func (s *stubStore) AppendMulti(mr dice.MultiRollResult) error {
 	return nil
 }
 

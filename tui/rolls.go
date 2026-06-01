@@ -102,7 +102,7 @@ func (a *app) handleSingleRollResult(res dice.Result) {
 	a.historyResults = append(a.historyResults, res)
 	a.historyOffset = len(a.historyResults) - 1
 
-	_ = a.historyStore.Append(res)
+	_ = a.historyStore.AppendSingle(res)
 	a.outputOffset = 0
 }
 
@@ -126,7 +126,7 @@ func (a *app) handleConsolidatedMultiRoll(mr *dice.MultiRollResult) {
 	a.historyResults = append(a.historyResults, *mr)
 	a.historyOffset = len(a.historyResults) - 1
 
-	_ = a.historyStore.Append(*mr)
+	_ = a.historyStore.AppendMulti(*mr)
 	a.outputOffset = 0
 }
 
