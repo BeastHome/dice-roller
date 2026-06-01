@@ -233,8 +233,24 @@ fields. Errors are plain `error` values; you can `errors.Is` /
 
 ## Stability and versioning
 
-What we treat as **stable** (won't change without a major version bump
-and a CHANGELOG entry):
+**Go module versioning vs product versioning.** The product version
+reported by `dice-roller --version` (currently `2.1.0`) is independent
+of the Go module version that `go get` resolves. The Go module is
+tagged starting at `v1.0.0` for the first proper release. Consumers
+should pin against module tags:
+
+```
+go get github.com/BeastHome/dice-roller/dice@v1.0.0
+```
+
+If/when the public API breaks compatibility, the module will move to
+`v2` and the import path will change to
+`github.com/BeastHome/dice-roller/v2/dice` (per Go modules rules).
+We'll signal that move in CHANGELOG and bump aggressively only when
+needed.
+
+What we treat as **stable** (won't change without a major Go-module
+version bump — i.e., a `/v2` import path — and a CHANGELOG entry):
 
 - `Engine`, `NewEngine`, `NewEngineWithSeed`, `NewEngineWithOptions`,
   `EngineOptions`.

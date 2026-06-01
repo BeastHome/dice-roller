@@ -10,6 +10,15 @@ A post-audit hardening pass. The user-facing CLI behavior is largely
 unchanged; the engine becomes a public package suitable for embedding,
 and a handful of latent bugs are fixed.
 
+> **Go module versioning note:** the product version is `2.1.0` (what
+> `dice-roller --version` reports and what this CHANGELOG tracks),
+> but the Go module is tagged starting at `v1.0.0` for this release.
+> Go's module system requires v2+ paths to include a `/v2` suffix
+> (`module github.com/.../v2`); since the engine has no prior tag
+> history, restarting Go-module versioning at v1.0.0 is the cleanest
+> path. Product and module versions will diverge over time — track
+> Go-module tags via `git tag -l`, product version via this file.
+
 ### Added
 
 - **`--seed N` CLI flag is now wired end-to-end.** The parser accepted
