@@ -2,104 +2,113 @@ package cli
 
 import (
 	"fmt"
+	"io"
 
 	"github.com/showr/dice-roller/internal/dice"
 	"github.com/showr/dice-roller/internal/parse"
 	"github.com/showr/dice-roller/internal/presentation"
 )
 
-func PrintHelp() {
-	fmt.Println("Dice Roller CLI")
-	fmt.Println()
-	fmt.Println("Version:", dice.Version)
-	fmt.Println()
-	fmt.Println("Usage:")
-	fmt.Println("  dice-roller <expression> [--verbose] [--multi N] [--no-color] [--seed N]")
-	fmt.Println("  dice-roller \"<expression> rolls=N\" [--verbose] [--no-color] [--seed N]")
-	fmt.Println()
-	fmt.Println("Examples:")
-	fmt.Println("  dice-roller 4d6k3")
-	fmt.Println("  dice-roller \"(2d6 + 1d4) * 2\"")
-	fmt.Println("  dice-roller \"5d10ro1>=8 rolls=10\"")
-	fmt.Println("  dice-roller 4d6k3 --multi 10 --verbose")
-	fmt.Println("  dice-roller 2d20kh1 3d8! 5d10>=8 --no-color")
-	fmt.Println("  dice-roller 4d6k3 --seed 42")
-	fmt.Println()
+// PrintHelp writes the CLI help text to w.
+func PrintHelp(w io.Writer) {
+	fmt.Fprintln(w, "Dice Roller CLI")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Version:", dice.Version)
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Usage:")
+	fmt.Fprintln(w, "  dice-roller <expression> [--verbose] [--multi N] [--no-color] [--seed N]")
+	fmt.Fprintln(w, "  dice-roller \"<expression> rolls=N\" [--verbose] [--no-color] [--seed N]")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Examples:")
+	fmt.Fprintln(w, "  dice-roller 4d6k3")
+	fmt.Fprintln(w, "  dice-roller \"(2d6 + 1d4) * 2\"")
+	fmt.Fprintln(w, "  dice-roller \"5d10ro1>=8 rolls=10\"")
+	fmt.Fprintln(w, "  dice-roller 4d6k3 --multi 10 --verbose")
+	fmt.Fprintln(w, "  dice-roller 2d20kh1 3d8! 5d10>=8 --no-color")
+	fmt.Fprintln(w, "  dice-roller 4d6k3 --seed 42")
+	fmt.Fprintln(w)
 
 	for _, line := range dice.HelpLines() {
-		fmt.Println(line)
+		fmt.Fprintln(w, line)
 	}
 
-	fmt.Println()
-	fmt.Println("Notes:")
-	fmt.Println("  - Arithmetic and grouping are supported, e.g. \"(2d6 + 1d4) * 2\".")
-	fmt.Println("  - In a shell, quote expressions that contain spaces or parentheses.")
-	fmt.Println("  - Multiple expressions may be passed and are evaluated in order.")
-	fmt.Println("  - Verbose mode prints rerolls, explosions, kept/dropped dice, and totals.")
-	fmt.Println("  - Colors are auto-disabled if output is piped or redirected.")
-	fmt.Println("  - --seed produces deterministic output for the entire invocation.")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "Notes:")
+	fmt.Fprintln(w, "  - Arithmetic and grouping are supported, e.g. \"(2d6 + 1d4) * 2\".")
+	fmt.Fprintln(w, "  - In a shell, quote expressions that contain spaces or parentheses.")
+	fmt.Fprintln(w, "  - Multiple expressions may be passed and are evaluated in order.")
+	fmt.Fprintln(w, "  - Verbose mode prints rerolls, explosions, kept/dropped dice, and totals.")
+	fmt.Fprintln(w, "  - Colors are auto-disabled if output is piped or redirected.")
+	fmt.Fprintln(w, "  - --seed produces deterministic output for the entire invocation.")
 }
 
-// RunCLI parses args, constructs an Engine (seeded if --seed was given),
-// and evaluates each expression. The engine is built here — not in main —
-// so that --seed flows from parsed input into NewEngineWithSeed.
-func RunCLI(args []string) {
-	// Handle help/version BEFORE parsing.
+// RunCLI parses args, evaluates each expression, and writes results to
+// stdout / errors to stderr. Returns a process exit code: 0 on success,
+// 1 if any expression failed or args couldn't be parsed. One bad
+// expression doesn't abort the batch — the remaining expressions still
+// evaluate, but the exit code reflects the partial failure so callers
+// can detect it.
+func RunCLI(args []string, stdout, stderr io.Writer) int {
+	// Help / version short-circuit before parsing (so they work even
+	// if other args are malformed).
 	for _, a := range args {
 		switch a {
 		case "--help", "-h":
-			PrintHelp()
-			return
+			PrintHelp(stdout)
+			return 0
 		case "--version":
-			fmt.Println("dice-roller version", dice.Version)
-			return
+			fmt.Fprintln(stdout, "dice-roller version", dice.Version)
+			return 0
 		}
 	}
 
 	parsed, err := parse.ParseArgs(args)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		fmt.Fprintln(stderr, "Error:", err)
+		return 1
 	}
 
 	if len(parsed.Expressions) == 0 {
-		return
+		return 0
 	}
 
 	engine := engineFromParsed(parsed)
 	colors := presentation.GetColorScheme(parsed.NoColor)
 	coloredFormatter := presentation.NewColoredFormatter(colors)
 
+	exitCode := 0
 	for _, expr := range parsed.Expressions {
 		if parsed.Multi <= 1 {
 			r, err := engine.Roll(expr)
 			if err != nil {
-				fmt.Printf("Error evaluating %q: %v\n", expr, err)
+				fmt.Fprintf(stderr, "Error evaluating %q: %v\n", expr, err)
+				exitCode = 1
 				continue
 			}
 			if parsed.Verbose {
-				fmt.Print(coloredFormatter.FormatVerboseSingle(r))
+				fmt.Fprint(stdout, coloredFormatter.FormatVerboseSingle(r))
 			} else {
-				fmt.Println(coloredFormatter.FormatCompactSingle(r))
+				fmt.Fprintln(stdout, coloredFormatter.FormatCompactSingle(r))
 			}
 			continue
 		}
 
 		mr, err := engine.RollMany(expr, parsed.Multi)
 		if err != nil {
-			fmt.Printf("Error evaluating %q: %v\n", expr, err)
+			fmt.Fprintf(stderr, "Error evaluating %q: %v\n", expr, err)
+			exitCode = 1
 			continue
 		}
 		if parsed.Verbose {
-			fmt.Print(coloredFormatter.FormatVerboseMulti(mr))
+			fmt.Fprint(stdout, coloredFormatter.FormatVerboseMulti(mr))
 		} else {
-			fmt.Println(coloredFormatter.FormatCompactMulti(mr))
+			fmt.Fprintln(stdout, coloredFormatter.FormatCompactMulti(mr))
 		}
 	}
+	return exitCode
 }
 
-// engineFromParsed honors --seed when present; otherwise uses a
-// time-based default.
+// engineFromParsed honors --seed when present; otherwise time-based default.
 func engineFromParsed(p parse.ParsedInput) *dice.Engine {
 	if p.Seed != nil {
 		return dice.NewEngineWithSeed(int64(*p.Seed))
