@@ -35,7 +35,10 @@ func evaluateExprNode(rng *rand.Rand, source string, node ExprNode) (Result, err
 		if err != nil {
 			return Result{}, err
 		}
-		res := EvaluateSingle(rng, expr)
+		res, err := EvaluateSingle(rng, expr)
+		if err != nil {
+			return Result{}, err
+		}
 		res.Expression = expr.Raw
 		return res, nil
 

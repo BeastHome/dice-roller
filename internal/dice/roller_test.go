@@ -2,6 +2,7 @@ package dice
 
 import (
 	"math/rand"
+	"strings"
 	"testing"
 )
 
@@ -18,10 +19,20 @@ func sumInts(v []int) int {
 	return total
 }
 
+// mustEvaluate wraps EvaluateSingle for tests that expect success.
+func mustEvaluate(t *testing.T, rng *rand.Rand, expr Expression) Result {
+	t.Helper()
+	res, err := EvaluateSingle(rng, expr)
+	if err != nil {
+		t.Fatalf("EvaluateSingle returned error: %v", err)
+	}
+	return res
+}
+
 func TestEvaluateSingle_BasicNdXKeepsAllRollsInRange(t *testing.T) {
 	rng := newSeededRNG(1)
 	expr := Expression{Raw: "4d6", Count: 4, Sides: 6}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Rolls) != 4 {
 		t.Fatalf("expected 4 rolls, got %d", len(res.Rolls))
@@ -45,7 +56,7 @@ func TestEvaluateSingle_KeepHighest(t *testing.T) {
 		Raw: "4d6k3", Count: 4, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModKeepHigh, Count: 3}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Kept) != 3 || len(res.Dropped) != 1 {
 		t.Fatalf("expected 3 kept and 1 dropped, got %d/%d", len(res.Kept), len(res.Dropped))
@@ -68,7 +79,7 @@ func TestEvaluateSingle_KeepLowest(t *testing.T) {
 		Raw: "4d6kl2", Count: 4, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModKeepLow, Count: 2}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Kept) != 2 || len(res.Dropped) != 2 {
 		t.Fatalf("expected 2 kept and 2 dropped, got %d/%d", len(res.Kept), len(res.Dropped))
@@ -88,7 +99,7 @@ func TestEvaluateSingle_DropHighest(t *testing.T) {
 		Raw: "4d6dh1", Count: 4, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModDropHigh, Count: 1}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Kept) != 3 || len(res.Dropped) != 1 {
 		t.Fatalf("expected 3 kept and 1 dropped, got %d/%d", len(res.Kept), len(res.Dropped))
@@ -106,7 +117,7 @@ func TestEvaluateSingle_DropLowest(t *testing.T) {
 		Raw: "4d6dl1", Count: 4, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModDropLow, Count: 1}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Kept) != 3 || len(res.Dropped) != 1 {
 		t.Fatalf("expected 3 kept and 1 dropped, got %d/%d", len(res.Kept), len(res.Dropped))
@@ -126,7 +137,7 @@ func TestEvaluateSingle_RerollReplace_TracksOldValue(t *testing.T) {
 		Raw: "5d6r6", Count: 5, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModReroll, Threshold: 6}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Rerolls) != 5 {
 		t.Fatalf("expected 5 reroll entries (all triggered), got %d", len(res.Rerolls))
@@ -149,7 +160,7 @@ func TestEvaluateSingle_RerollOnce_TracksNewValue(t *testing.T) {
 		Raw: "5d6ro6", Count: 5, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModRerollOnce, Threshold: 6}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Rerolls) != 5 {
 		t.Fatalf("expected 5 reroll entries, got %d", len(res.Rerolls))
@@ -169,7 +180,7 @@ func TestEvaluateSingle_RerollAdd_AppendsExtraDice(t *testing.T) {
 		Raw: "3d6ra6", Count: 3, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModRerollAdd, Threshold: 6}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Rolls) != 6 {
 		t.Fatalf("expected 6 final rolls (3 original + 3 added), got %d: %v", len(res.Rolls), res.Rolls)
@@ -191,7 +202,7 @@ func TestEvaluateSingle_ExplodeSimple_SinglePassOnMax(t *testing.T) {
 		Raw: "1d1!", Count: 1, Sides: 1,
 		Modifiers: []Modifier{{Kind: ModExplode}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Rolls) != 1 {
 		t.Fatalf("expected Rolls to hold 1 post-reroll value, got %d: %v", len(res.Rolls), res.Rolls)
@@ -210,7 +221,7 @@ func TestEvaluateSingle_ExplodeThreshold_AddsOnePerQualifyingInitialDie(t *testi
 		Raw: "5d6!5", Count: 5, Sides: 6,
 		Modifiers: []Modifier{{Kind: ModExplodeThreshold, Threshold: 5}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	qualifying := 0
 	for _, v := range res.Rolls {
@@ -240,7 +251,7 @@ func TestEvaluateSingle_ExplodeCompound_ExercisesBfsPathSafely(t *testing.T) {
 		Raw: "5d100!!", Count: 5, Sides: 100,
 		Modifiers: []Modifier{{Kind: ModExplodeCompound}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	if len(res.Rolls) < 5 {
 		t.Fatalf("expected at least 5 rolls (originals), got %d", len(res.Rolls))
@@ -253,7 +264,7 @@ func TestEvaluateSingle_SuccessThreshold_CountsKeptValues(t *testing.T) {
 		Raw: "10d10>=7", Count: 10, Sides: 10,
 		Modifiers: []Modifier{{Kind: ModSuccessThreshold, Op: ">=", Value: 7}},
 	}
-	res := EvaluateSingle(rng, expr)
+	res := mustEvaluate(t, rng, expr)
 
 	expected := 0
 	for _, v := range res.Kept {
@@ -284,7 +295,7 @@ func TestEvaluateSingle_SuccessThreshold_AllFourOperators(t *testing.T) {
 				Raw: "8d6", Count: 8, Sides: 6,
 				Modifiers: []Modifier{{Kind: ModSuccessThreshold, Op: tc.op, Value: tc.target}},
 			}
-			res := EvaluateSingle(rng, expr)
+			res := mustEvaluate(t, rng, expr)
 			expected := 0
 			for _, v := range res.Kept {
 				if tc.predicate(v) {
@@ -299,7 +310,49 @@ func TestEvaluateSingle_SuccessThreshold_AllFourOperators(t *testing.T) {
 	}
 }
 
-// Note: ModAdditive behavior in EvaluateSingle is intentionally NOT tested
-// here. The AST path always handles `+N` via combineBinaryResults, so the
-// legacy single-dice-term additive code path in EvaluateSingle is dead from
-// user input. Slice B removes that code; its companion test lives there.
+// Slice B fixes — companion tests for the changes that landed in
+// the same slice as roller.go's refactor.
+
+func TestEvaluateSingle_AdditiveModifierIsNoOp(t *testing.T) {
+	// Slice B removed additive handling from EvaluateSingle — arithmetic
+	// is the AST evaluator's job. A direct caller that constructs an
+	// Expression with ModAdditive should see the additive ignored
+	// (total = sum of kept, no +N applied here).
+	rng := newSeededRNG(1)
+	expr := Expression{
+		Raw: "1d1", Count: 1, Sides: 1,
+		Modifiers: []Modifier{{Kind: ModAdditive, Value: 99}},
+	}
+	res := mustEvaluate(t, rng, expr)
+	if res.Total != 1 {
+		t.Fatalf("expected total=1 (kept only, additive ignored); got %d", res.Total)
+	}
+}
+
+func TestEvaluateSingle_CompoundExplodeAdversarialRngHitsDepthCap(t *testing.T) {
+	// d1 always rolls 1 (max). Without maxExplodeDepth this would
+	// loop forever; with the cap it returns an error after the
+	// configured number of explosions.
+	rng := newSeededRNG(1)
+	expr := Expression{
+		Raw: "1d1!!", Count: 1, Sides: 1,
+		Modifiers: []Modifier{{Kind: ModExplodeCompound}},
+	}
+	_, err := EvaluateSingle(rng, expr)
+	if err == nil {
+		t.Fatalf("expected max-depth error for adversarial d1!!, got nil")
+	}
+	if !strings.Contains(err.Error(), "exceeded max depth") {
+		t.Fatalf("expected max-depth error message, got: %v", err)
+	}
+}
+
+func TestEngineRoll_CompoundExplodePropagatesDepthError(t *testing.T) {
+	// End-to-end: 1d1!! through Engine.Roll should surface the
+	// max-depth error rather than hanging or masking it.
+	engine := NewEngineWithSeed(1)
+	_, err := engine.Roll("1d1!!")
+	if err == nil {
+		t.Fatalf("expected max-depth error through Engine.Roll, got nil")
+	}
+}

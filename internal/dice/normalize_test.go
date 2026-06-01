@@ -20,29 +20,18 @@ func TestNormalizeModifiers_LastKeepDropWins(t *testing.T) {
 	}
 }
 
-func TestNormalizeModifiers_AdditiveMerged(t *testing.T) {
+func TestNormalizeModifiers_AdditivesAreDropped(t *testing.T) {
+	// Slice B removed additive handling from EvaluateSingle (arithmetic
+	// is the AST evaluator's job). normalizeModifiers now drops all
+	// ModAdditive entries — they're a no-op in the legacy path.
 	mods := []Modifier{
 		{Kind: ModAdditive, Value: 3},
 		{Kind: ModAdditive, Value: -5},
 		{Kind: ModAdditive, Value: 7},
 	}
 	out := normalizeModifiers(mods)
-	if len(out) != 1 {
-		t.Fatalf("expected single merged additive, got %d", len(out))
-	}
-	if out[0].Kind != ModAdditive || out[0].Value != 5 {
-		t.Fatalf("expected merged additive +5, got %#v", out[0])
-	}
-}
-
-func TestNormalizeModifiers_AdditiveZeroSumDropped(t *testing.T) {
-	mods := []Modifier{
-		{Kind: ModAdditive, Value: 3},
-		{Kind: ModAdditive, Value: -3},
-	}
-	out := normalizeModifiers(mods)
 	if len(out) != 0 {
-		t.Fatalf("expected zero-sum additives to be elided, got %d modifiers: %#v", len(out), out)
+		t.Fatalf("expected all additives to be dropped, got %d: %#v", len(out), out)
 	}
 }
 

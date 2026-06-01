@@ -30,6 +30,26 @@ func TestEngineRoll_DeterministicWithSameSeed(t *testing.T) {
 	}
 }
 
+func TestNewEngineWithSeed_ProducesDeterministicSequence(t *testing.T) {
+	// Convenience constructor for the --seed CLI flag and embedded
+	// consumers. Same seed → identical Roll sequence.
+	a := NewEngineWithSeed(99)
+	b := NewEngineWithSeed(99)
+	for i := 0; i < 10; i++ {
+		ra, err := a.Roll("1d100")
+		if err != nil {
+			t.Fatalf("iter %d: engine A roll: %v", i, err)
+		}
+		rb, err := b.Roll("1d100")
+		if err != nil {
+			t.Fatalf("iter %d: engine B roll: %v", i, err)
+		}
+		if ra.Total != rb.Total {
+			t.Fatalf("iter %d: seeded engines diverged (a=%d b=%d)", i, ra.Total, rb.Total)
+		}
+	}
+}
+
 func TestEngineRoll_DifferentSeedsProduceDifferentSequences(t *testing.T) {
 	// Sanity check that seed actually controls output. With two different
 	// seeds and 50 1d100 rolls each, identical sequences would mean the

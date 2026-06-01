@@ -1,6 +1,9 @@
 package dice
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestEngineRoll_EvaluatesArithmeticDiceExpression(t *testing.T) {
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
@@ -31,14 +34,17 @@ func TestEngineRoll_EvaluatesGroupedArithmeticExpression(t *testing.T) {
 	}
 }
 
-func TestEngineRoll_DivisionByZeroReturnsError(t *testing.T) {
-	// Slice B will also tighten this: today the AST eval error is masked
-	// by a fallback to the legacy parser, which then fails with a parse
-	// error. Either way the user sees an error — assert that without
-	// pinning the exact message.
+func TestEngineRoll_DivisionByZeroReturnsEvalError(t *testing.T) {
+	// Slice B tightened error propagation: when the AST path parses
+	// successfully but evaluation fails, the eval error is returned
+	// directly rather than masked by a fallback to the legacy parser.
 	engine := NewEngineWithOptions(EngineOptions{Seed: 1})
-	if _, err := engine.Roll("1d1 / (1d1 - 1)"); err == nil {
+	_, err := engine.Roll("1d1 / (1d1 - 1)")
+	if err == nil {
 		t.Fatalf("expected error from division by zero, got nil")
+	}
+	if !strings.Contains(err.Error(), "division by zero") {
+		t.Fatalf("expected error mentioning 'division by zero', got: %v", err)
 	}
 }
 

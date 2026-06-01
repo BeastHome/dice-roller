@@ -14,8 +14,8 @@ func PrintHelp() {
 	fmt.Println("Version:", dice.Version)
 	fmt.Println()
 	fmt.Println("Usage:")
-	fmt.Println("  dice-roller <expression> [--verbose] [--multi N] [--no-color]")
-	fmt.Println("  dice-roller \"<expression> rolls=N\" [--verbose] [--no-color]")
+	fmt.Println("  dice-roller <expression> [--verbose] [--multi N] [--no-color] [--seed N]")
+	fmt.Println("  dice-roller \"<expression> rolls=N\" [--verbose] [--no-color] [--seed N]")
 	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  dice-roller 4d6k3")
@@ -23,6 +23,7 @@ func PrintHelp() {
 	fmt.Println("  dice-roller \"5d10ro1>=8 rolls=10\"")
 	fmt.Println("  dice-roller 4d6k3 --multi 10 --verbose")
 	fmt.Println("  dice-roller 2d20kh1 3d8! 5d10>=8 --no-color")
+	fmt.Println("  dice-roller 4d6k3 --seed 42")
 	fmt.Println()
 
 	for _, line := range dice.HelpLines() {
@@ -36,11 +37,14 @@ func PrintHelp() {
 	fmt.Println("  - Multiple expressions may be passed and are evaluated in order.")
 	fmt.Println("  - Verbose mode prints rerolls, explosions, kept/dropped dice, and totals.")
 	fmt.Println("  - Colors are auto-disabled if output is piped or redirected.")
+	fmt.Println("  - --seed produces deterministic output for the entire invocation.")
 }
 
-func RunCLI(engine *dice.Engine, args []string) {
-
-	// Handle help/version BEFORE parsing
+// RunCLI parses args, constructs an Engine (seeded if --seed was given),
+// and evaluates each expression. The engine is built here — not in main —
+// so that --seed flows from parsed input into NewEngineWithSeed.
+func RunCLI(args []string) {
+	// Handle help/version BEFORE parsing.
 	for _, a := range args {
 		switch a {
 		case "--help", "-h":
@@ -52,33 +56,28 @@ func RunCLI(engine *dice.Engine, args []string) {
 		}
 	}
 
-	// Shared parser handles flags, grouping, normalization
 	parsed, err := parse.ParseArgs(args)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
-	// No expressions? Nothing to do.
 	if len(parsed.Expressions) == 0 {
 		return
 	}
 
-	// Create colored formatter with appropriate color scheme
+	engine := engineFromParsed(parsed)
 	colors := presentation.GetColorScheme(parsed.NoColor)
 	coloredFormatter := presentation.NewColoredFormatter(colors)
 
-	// Evaluate each normalized expression
 	for _, expr := range parsed.Expressions {
-
 		result, err := engine.Evaluate(expr, parsed.Multi)
 		if err != nil {
 			fmt.Printf("Error evaluating %q: %v\n", expr, err)
-			return
+			continue
 		}
 
 		switch v := result.(type) {
-
 		case dice.Result:
 			if parsed.Verbose {
 				fmt.Print(coloredFormatter.FormatVerboseSingle(v))
@@ -94,4 +93,13 @@ func RunCLI(engine *dice.Engine, args []string) {
 			}
 		}
 	}
+}
+
+// engineFromParsed honors --seed when present; otherwise uses a
+// time-based default.
+func engineFromParsed(p parse.ParsedInput) *dice.Engine {
+	if p.Seed != nil {
+		return dice.NewEngineWithSeed(int64(*p.Seed))
+	}
+	return dice.NewEngine()
 }

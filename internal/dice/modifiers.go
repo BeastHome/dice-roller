@@ -38,14 +38,9 @@ type Modifier struct {
 
 //
 // ------------------------------------------------------------
-// ADDITIVE + SUCCESS HELPERS
+// SUCCESS HELPERS
 // ------------------------------------------------------------
 //
-
-// applyAdditive applies +N or -N to the running total.
-func applyAdditive(total int, value int) int {
-	return total + value
-}
 
 // countSuccesses counts how many values satisfy a threshold operator.
 func countSuccesses(values []int, op string, target int) int {
@@ -80,9 +75,11 @@ func countSuccesses(values []int, op string, target int) int {
 // ------------------------------------------------------------
 //
 
-// normalizeModifiers enforces last‑wins semantics for keep/drop,
-// merges additive modifiers, and ensures only one reroll family
-// and one success threshold are applied.
+// normalizeModifiers enforces last‑wins semantics for keep/drop and
+// ensures only one reroll family member and one success threshold are
+// applied. ModAdditive entries are silently dropped — arithmetic is
+// the AST evaluator's responsibility (see eval_ast.go), so any
+// additive that survives normalization here would be a no-op anyway.
 func normalizeModifiers(mods []Modifier) []Modifier {
 	out := []Modifier{}
 
@@ -93,8 +90,6 @@ func normalizeModifiers(mods []Modifier) []Modifier {
 
 		keepDropIndex = -1
 		haveSuccess   bool
-
-		additiveTotal int
 	)
 
 	for _, m := range mods {
@@ -135,20 +130,12 @@ func normalizeModifiers(mods []Modifier) []Modifier {
 				haveSuccess = true
 			}
 
-		// Additive: merge later
+		// Additive: silently dropped (handled by AST evaluator).
 		case ModAdditive:
-			additiveTotal += m.Value
 
 		default:
 			out = append(out, m)
 		}
-	}
-
-	if additiveTotal != 0 {
-		out = append(out, Modifier{
-			Kind:  ModAdditive,
-			Value: additiveTotal,
-		})
 	}
 
 	return out
