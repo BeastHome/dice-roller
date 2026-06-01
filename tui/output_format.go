@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+
 	"github.com/showr/dice-roller/internal/dice"
 )
 
@@ -64,7 +65,7 @@ func buildMultiRollOutput(mr dice.MultiRollResult, selectedRoll int) ([]outputSt
 
 	selectedRoll = clampRollSelection(selectedRoll, mr.Rolls)
 	stats := computeMultiRollStats(mr.Rolls)
-	headerText := fmt.Sprintf("[%s]  AVG %.2f  MED %.2f  MIN %d  MAX %d  SD %.2f", dice.FormatMultiExpression(mr.Expression, len(mr.Rolls)), stats.average, stats.median, stats.min, stats.max, stats.stdDev)
+	headerText := fmt.Sprintf("[%s]  AVG %.2f  MED %.2f  MIN %d  MAX %d  SD %.2f", dice.FormatMultiExpression(mr.Expression, len(mr.Rolls)), stats.Average, stats.Median, stats.Min, stats.Max, stats.StdDev)
 	header := outputStyledLine{text: headerText, spans: []outputSpan{{start: 0, end: len(headerText), style: styleOutputHeading}}}
 
 	statsLine, statsZones := buildTotalsLine(mr.Rolls, selectedRoll)
@@ -157,12 +158,11 @@ func formatShortValueBlock(values []int) string {
 	return strings.Join(parts, " ")
 }
 
+// multiRollStats extends dice.Stats with the two UI-only summaries
+// (a sparkline visualization and per-value frequency strings) that
+// don't belong in the engine.
 type multiRollStats struct {
-	average   float64
-	median    float64
-	stdDev    float64
-	min       int
-	max       int
+	dice.Stats
 	sparkline string
 	frequency []string
 }
@@ -170,67 +170,26 @@ type multiRollStats struct {
 func computeMultiRollStats(rolls []dice.Result) multiRollStats {
 	totals := make([]int, len(rolls))
 	freqMap := map[int]int{}
-	minTotal := rolls[0].Total
-	maxTotal := rolls[0].Total
-	var sum float64
-
 	for i, roll := range rolls {
 		totals[i] = roll.Total
 		freqMap[roll.Total]++
-		sum += float64(roll.Total)
-		if roll.Total < minTotal {
-			minTotal = roll.Total
-		}
-		if roll.Total > maxTotal {
-			maxTotal = roll.Total
-		}
 	}
 
-	average := sum / float64(len(totals))
-	median := computeMedian(totals)
-	stdDev := computeStdDev(totals, average)
-	frequency := make([]string, 0, len(freqMap))
 	keys := make([]int, 0, len(freqMap))
 	for total := range freqMap {
 		keys = append(keys, total)
 	}
 	sort.Ints(keys)
+	frequency := make([]string, 0, len(keys))
 	for _, total := range keys {
 		frequency = append(frequency, fmt.Sprintf("%d:%d", total, freqMap[total]))
 	}
 
 	return multiRollStats{
-		average:   average,
-		median:    median,
-		stdDev:    stdDev,
-		min:       minTotal,
-		max:       maxTotal,
+		Stats:     dice.ComputeStats(totals),
 		sparkline: buildSparkline(totals),
 		frequency: frequency,
 	}
-}
-
-func computeMedian(values []int) float64 {
-	copyValues := append([]int(nil), values...)
-	sort.Ints(copyValues)
-	middle := len(copyValues) / 2
-	if len(copyValues)%2 == 1 {
-		return float64(copyValues[middle])
-	}
-	return float64(copyValues[middle-1]+copyValues[middle]) / 2
-}
-
-func computeStdDev(values []int, mean float64) float64 {
-	if len(values) == 0 {
-		return 0
-	}
-	var variance float64
-	for _, value := range values {
-		delta := float64(value) - mean
-		variance += delta * delta
-	}
-	variance /= float64(len(values))
-	return math.Sqrt(variance)
 }
 
 func buildSparkline(values []int) string {

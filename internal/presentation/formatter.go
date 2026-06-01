@@ -2,8 +2,6 @@ package presentation
 
 import (
 	"fmt"
-	"math"
-	"sort"
 	"strings"
 
 	"github.com/showr/dice-roller/internal/dice"
@@ -49,24 +47,8 @@ func (f *DefaultFormatter) FormatMultiSummary(mr dice.MultiRollResult) string {
 	if len(mr.Rolls) == 0 {
 		return fullExpr
 	}
-
-	// Compute stats
-	var sum int64
-	min := mr.Rolls[0].Total
-	max := mr.Rolls[0].Total
-
-	for _, r := range mr.Rolls {
-		sum += int64(r.Total)
-		if r.Total < min {
-			min = r.Total
-		}
-		if r.Total > max {
-			max = r.Total
-		}
-	}
-
-	avg := float64(sum) / float64(len(mr.Rolls))
-	return fmt.Sprintf("%s | avg=%.2f | min=%d | max=%d", fullExpr, avg, min, max)
+	s := dice.StatsFromResults(mr.Rolls)
+	return fmt.Sprintf("%s | avg=%.2f | min=%d | max=%d", fullExpr, s.Average, s.Min, s.Max)
 }
 
 // FormatVerbose returns a detailed breakdown with all roll details.
@@ -152,17 +134,16 @@ func (f *ColoredFormatter) FormatCompactMulti(mr dice.MultiRollResult) string {
 		return fmt.Sprintf("[%s]", mr.Expression)
 	}
 
-	// Compute stats
-	stats := computeMultiRollStatsForFormatter(mr.Rolls)
+	stats := dice.StatsFromResults(mr.Rolls)
 
 	header := fmt.Sprintf("[%s %s]  %s %.2f  %s %.2f  %s %d  %s %d  %s %.2f",
 		mr.Expression,
 		f.colors.Col(f.colors.Dim, fmt.Sprintf("rolls=%d", len(mr.Rolls))),
-		f.colors.Col(f.colors.Stats, "AVG"), stats.average,
-		f.colors.Col(f.colors.Stats, "MED"), stats.median,
-		f.colors.Col(f.colors.Stats, "MIN"), stats.min,
-		f.colors.Col(f.colors.Stats, "MAX"), stats.max,
-		f.colors.Col(f.colors.Stats, "SD"), stats.stdDev,
+		f.colors.Col(f.colors.Stats, "AVG"), stats.Average,
+		f.colors.Col(f.colors.Stats, "MED"), stats.Median,
+		f.colors.Col(f.colors.Stats, "MIN"), stats.Min,
+		f.colors.Col(f.colors.Stats, "MAX"), stats.Max,
+		f.colors.Col(f.colors.Stats, "SD"), stats.StdDev,
 	)
 
 	// Build totals line with highest highlighted
@@ -239,15 +220,15 @@ func (f *ColoredFormatter) FormatVerboseMulti(mr dice.MultiRollResult) string {
 		return fmt.Sprintf("[%s]", mr.Expression)
 	}
 
-	stats := computeMultiRollStatsForFormatter(mr.Rolls)
+	stats := dice.StatsFromResults(mr.Rolls)
 	header := fmt.Sprintf("[%s %s]  %s %.2f  %s %.2f  %s %d  %s %d  %s %.2f\n",
 		mr.Expression,
 		f.colors.Col(f.colors.Dim, fmt.Sprintf("rolls=%d", len(mr.Rolls))),
-		f.colors.Col(f.colors.Stats, "AVG"), stats.average,
-		f.colors.Col(f.colors.Stats, "MED"), stats.median,
-		f.colors.Col(f.colors.Stats, "MIN"), stats.min,
-		f.colors.Col(f.colors.Stats, "MAX"), stats.max,
-		f.colors.Col(f.colors.Stats, "SD"), stats.stdDev,
+		f.colors.Col(f.colors.Stats, "AVG"), stats.Average,
+		f.colors.Col(f.colors.Stats, "MED"), stats.Median,
+		f.colors.Col(f.colors.Stats, "MIN"), stats.Min,
+		f.colors.Col(f.colors.Stats, "MAX"), stats.Max,
+		f.colors.Col(f.colors.Stats, "SD"), stats.StdDev,
 	)
 
 	// Build totals line
@@ -340,69 +321,3 @@ func formatIntSlice(values []int) string {
 	return strings.Join(parts, " ")
 }
 
-// multiRollStatsForFormatter holds computed stats
-type multiRollStatsForFormatter struct {
-	average float64
-	median  float64
-	stdDev  float64
-	min     int
-	max     int
-}
-
-// computeMultiRollStatsForFormatter computes stats for multi-roll display
-func computeMultiRollStatsForFormatter(rolls []dice.Result) multiRollStatsForFormatter {
-	if len(rolls) == 0 {
-		return multiRollStatsForFormatter{}
-	}
-
-	totals := make([]int, len(rolls))
-	minTotal := rolls[0].Total
-	maxTotal := rolls[0].Total
-	var sum float64
-
-	for i, roll := range rolls {
-		totals[i] = roll.Total
-		sum += float64(roll.Total)
-		if roll.Total < minTotal {
-			minTotal = roll.Total
-		}
-		if roll.Total > maxTotal {
-			maxTotal = roll.Total
-		}
-	}
-
-	average := sum / float64(len(totals))
-	median := computeMedianForFormatter(totals)
-	stdDev := computeStdDevForFormatter(totals, average)
-
-	return multiRollStatsForFormatter{
-		average: average,
-		median:  median,
-		stdDev:  stdDev,
-		min:     minTotal,
-		max:     maxTotal,
-	}
-}
-
-func computeMedianForFormatter(values []int) float64 {
-	copyValues := append([]int(nil), values...)
-	sort.Ints(copyValues)
-	middle := len(copyValues) / 2
-	if len(copyValues)%2 == 1 {
-		return float64(copyValues[middle])
-	}
-	return float64(copyValues[middle-1]+copyValues[middle]) / 2
-}
-
-func computeStdDevForFormatter(values []int, mean float64) float64 {
-	if len(values) == 0 {
-		return 0
-	}
-	var variance float64
-	for _, value := range values {
-		delta := float64(value) - mean
-		variance += delta * delta
-	}
-	variance /= float64(len(values))
-	return math.Sqrt(variance)
-}
