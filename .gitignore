@@ -11,3 +11,6 @@ dist/
 
 # Coverage artifacts
 coverage.out
+
+# Claude Code throwaway worktrees (memory/ next to it is intentionally tracked)
+.claude/worktrees/
