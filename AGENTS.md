@@ -20,7 +20,9 @@ Single Go module (`github.com/showr/dice-roller`, Go 1.24). Layout:
 - `cmd/cli/` — CLI runner (`RunCLI`, `PrintHelp`).
 - `tui/` — tcell-based three-pane TUI (input / output / history), layout,
   event handling, rendering, history pane wiring.
-- `internal/dice/` — dice engine. Two parse/eval paths exist:
+- `dice/` — dice engine, **public package** importable by external
+  consumers as `github.com/showr/dice-roller/dice`. Two parse/eval
+  paths exist:
   - **AST path**: recursive-descent parser (`parser_rd.go`) produces an
     AST (`ast_nodes.go`); `eval_ast.go` evaluates it directly, including
     arithmetic, grouping, and unary ops.
@@ -30,7 +32,8 @@ Single Go module (`github.com/showr/dice-roller`, Go 1.24). Layout:
     feed this evaluator for the dice-only case.
   Other contents: lexer/tokens, modifiers (keep/drop, explode, reroll,
   success), multi-roll, verbose breakdowns, platform-specific history
-  paths, version.
+  paths, version. The stable public surface is documented in
+  [EMBEDDING.md](EMBEDDING.md).
 - `internal/parse/` — input normalization shared by CLI and TUI (lowercase,
   spacing, grouping, flag extraction).
 - `internal/history/` — persistent session history store (line-delimited

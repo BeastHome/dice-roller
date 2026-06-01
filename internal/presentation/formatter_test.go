@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 )
 
 // plainFormatter returns a ColoredFormatter wired with the

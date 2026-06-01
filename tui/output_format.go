@@ -8,7 +8,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 )
 
 type outputSpan struct {

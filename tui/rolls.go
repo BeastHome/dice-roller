@@ -3,7 +3,7 @@ package tui
 import (
 	"strings"
 
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 	"github.com/showr/dice-roller/internal/parse"
 )
 

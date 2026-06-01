@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/showr/dice-roller/cmd/cli"
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 	"github.com/showr/dice-roller/tui"
 )
 

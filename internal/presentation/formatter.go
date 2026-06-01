@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 )
 
 // Formatter provides methods for formatting dice roll results for display.

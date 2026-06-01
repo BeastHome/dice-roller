@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 	"github.com/showr/dice-roller/internal/parse"
 	"github.com/showr/dice-roller/internal/presentation"
 )

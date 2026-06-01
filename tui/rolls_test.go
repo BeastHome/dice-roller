@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 	"github.com/showr/dice-roller/internal/presentation"
 )
 

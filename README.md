@@ -149,3 +149,4 @@ Requires Go 1.24+.
 - [SEMANTIC_DECISIONS.md](SEMANTIC_DECISIONS.md)
 - [IMPLEMENTATION_ROADMAP.md](IMPLEMENTATION_ROADMAP.md)
 - [CHANGELOG.md](CHANGELOG.md)
+- [EMBEDDING.md](EMBEDDING.md) — for external Go projects importing the dice engine.

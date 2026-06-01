@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/showr/dice-roller/internal/dice"
+	"github.com/showr/dice-roller/dice"
 )
 
 func fillRect(s tcell.Screen, x1, y1, x2, y2 int, style tcell.Style) {
