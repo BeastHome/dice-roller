@@ -124,3 +124,6 @@ see [[project-drift-check-hook]] for the dependency.
   normalization and the `dice.Engine` evaluator (SD-001, SD-002). Add
   shared logic to those packages rather than duplicating in `cmd/cli` or
   `tui`.
+- **Sharing a `dice.Engine` across goroutines.** The engine's `*rand.Rand`
+  is not safe for concurrent use; the dice package takes no locks (SD-010).
+  Give each goroutine its own Engine, or wrap access in a mutex.

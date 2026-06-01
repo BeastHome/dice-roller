@@ -71,26 +71,29 @@ func RunCLI(args []string) {
 	coloredFormatter := presentation.NewColoredFormatter(colors)
 
 	for _, expr := range parsed.Expressions {
-		result, err := engine.Evaluate(expr, parsed.Multi)
+		if parsed.Multi <= 1 {
+			r, err := engine.Roll(expr)
+			if err != nil {
+				fmt.Printf("Error evaluating %q: %v\n", expr, err)
+				continue
+			}
+			if parsed.Verbose {
+				fmt.Print(coloredFormatter.FormatVerboseSingle(r))
+			} else {
+				fmt.Println(coloredFormatter.FormatCompactSingle(r))
+			}
+			continue
+		}
+
+		mr, err := engine.RollMany(expr, parsed.Multi)
 		if err != nil {
 			fmt.Printf("Error evaluating %q: %v\n", expr, err)
 			continue
 		}
-
-		switch v := result.(type) {
-		case dice.Result:
-			if parsed.Verbose {
-				fmt.Print(coloredFormatter.FormatVerboseSingle(v))
-			} else {
-				fmt.Println(coloredFormatter.FormatCompactSingle(v))
-			}
-
-		case dice.MultiRollResult:
-			if parsed.Verbose {
-				fmt.Print(coloredFormatter.FormatVerboseMulti(v))
-			} else {
-				fmt.Println(coloredFormatter.FormatCompactMulti(v))
-			}
+		if parsed.Verbose {
+			fmt.Print(coloredFormatter.FormatVerboseMulti(mr))
+		} else {
+			fmt.Println(coloredFormatter.FormatCompactMulti(mr))
 		}
 	}
 }

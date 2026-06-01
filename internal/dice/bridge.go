@@ -5,9 +5,13 @@ import (
 	"strings"
 )
 
-// BuildExpressionFromTree converts a simple dice-only AST into the legacy
-// Expression type used by the current evaluator. Rich arithmetic trees are
-// intentionally rejected until AST evaluation is introduced.
+// BuildExpressionFromTree converts a dice-only AST node into the flat
+// Expression type used by the legacy evaluator (roller.go::EvaluateSingle).
+// It rejects arithmetic / binary trees — those are evaluated directly by
+// eval_ast.go::combineBinaryResults, which calls EvaluateSingle on each
+// DiceNode it encounters. This bridge exists so the AST parser can serve
+// as the front-end for the legacy evaluator for the dice-only case,
+// without duplicating the modifier-parsing logic in parser_modifiers.go.
 func BuildExpressionFromTree(tree *ParseTree) (Expression, error) {
 	if tree == nil || tree.Expr == nil {
 		return Expression{}, fmt.Errorf("empty parse tree")

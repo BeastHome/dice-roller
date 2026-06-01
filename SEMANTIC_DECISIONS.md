@@ -46,3 +46,13 @@ This document records behavioral decisions for dice-roller so future changes sta
 - Status: accepted
 - Decision: CLI color is disabled when output is redirected unless explicitly forced by mode behavior.
 - Rationale: Keep pipelines and logs clean.
+
+## SD-010: Engine is single-goroutine; callers serialize concurrency
+- Status: accepted
+- Decision: `dice.Engine` holds a `*rand.Rand` and takes no internal locks. Each goroutine that calls `Roll` / `RollMany` must have its own Engine, or callers must serialize access with their own mutex.
+- Rationale: Most consumers (CLI, TUI, turn-based games) are single-goroutine and shouldn't pay the cost of lock contention. Concurrent callers can wrap an Engine with a Mutex or construct one Engine per goroutine — both are cheap. If/when a concurrent-by-default constructor is needed it can be added as `NewSyncEngine` without disturbing the existing API.
+
+## SD-011: Arithmetic is the AST evaluator's responsibility
+- Status: accepted
+- Decision: Operators `+ - * /` and grouping are evaluated by `eval_ast.go::combineBinaryResults`, never by `roller.go::EvaluateSingle`. The latter ignores any `ModAdditive` entries it receives and returns `Total = sum(Kept)` for a single dice term in isolation.
+- Rationale: Splits concerns cleanly between the AST and legacy paths. EvaluateSingle previously had a buggy nested-loop additive application that was masked only because the AST path always handled `+N` first; removing the duplicate eliminates the bug class entirely and makes the legacy path's job — one dice term + its modifiers — unambiguous.

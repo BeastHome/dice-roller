@@ -43,20 +43,24 @@ func (a *app) handleEnter() {
 		count = 1
 	}
 
-	result, err := a.engine.Evaluate(expr, count)
+	if count <= 1 {
+		r, err := a.engine.Roll(expr)
+		if err != nil {
+			a.setOutputError(err)
+			return
+		}
+		a.handleSingleRollResult(r)
+		a.clearInput()
+		return
+	}
+
+	mr, err := a.engine.RollMany(expr, count)
 	if err != nil {
 		a.setOutputError(err)
 		return
 	}
-
-	switch v := result.(type) {
-	case dice.Result:
-		a.handleSingleRollResult(v)
-	case dice.MultiRollResult:
-		v.Expression = expr
-		a.handleConsolidatedMultiRoll(&v)
-	}
-
+	mr.Expression = expr
+	a.handleConsolidatedMultiRoll(&mr)
 	a.clearInput()
 }
 

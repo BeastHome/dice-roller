@@ -1,7 +1,7 @@
 package dice
 
 // EvaluateMulti performs N independent evaluations of the same expression.
-// This function is called by Engine.Evaluate() when count > 1.
+// This function is called by Engine.RollMany.
 func EvaluateMulti(e *Engine, expr string, count int) (MultiRollResult, error) {
 	results := make([]Result, 0, count)
 

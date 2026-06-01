@@ -1,3 +1,12 @@
+// Package dice is the dice-expression engine: lexer, parsers (AST and
+// legacy regex), evaluator, modifiers, multi-roll orchestration, and
+// result formatting hooks.
+//
+// Thread-safety: an Engine holds a *rand.Rand which is NOT safe for
+// concurrent use. Each goroutine that calls Roll/RollMany must have
+// its own Engine, or callers must serialize access with their own
+// mutex. The dice engine itself takes no locks. See SD-010 in
+// SEMANTIC_DECISIONS.md for the rationale.
 package dice
 
 import (
@@ -49,10 +58,13 @@ func (e *Engine) Roll(expr string) (Result, error) {
 	return res, nil
 }
 
-// Evaluate is the unified API for single or multi‑roll evaluation.
-func (e *Engine) Evaluate(expr string, count int) (interface{}, error) {
-	if count <= 1 {
-		return e.Roll(expr)
+// RollMany evaluates the same expression `count` times and returns the
+// aggregate result. For count <= 1, it returns a MultiRollResult with
+// a single entry — callers that want a bare Result for the single case
+// should call Roll directly.
+func (e *Engine) RollMany(expr string, count int) (MultiRollResult, error) {
+	if count < 1 {
+		count = 1
 	}
 	return EvaluateMulti(e, expr, count)
 }
