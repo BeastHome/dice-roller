@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/showr/dice-roller/dice"
-	"github.com/showr/dice-roller/internal/history"
-	"github.com/showr/dice-roller/internal/presentation"
+	"github.com/BeastHome/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/internal/history"
+	"github.com/BeastHome/dice-roller/internal/presentation"
 )
 
 type app struct {

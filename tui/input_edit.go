@@ -3,7 +3,7 @@ package tui
 import (
 	"unicode/utf8"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 func (a *app) clearInput() {

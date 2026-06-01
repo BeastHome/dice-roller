@@ -3,7 +3,7 @@ package history
 import (
 	"os"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 // Store defines the interface for persisting and retrieving dice roll

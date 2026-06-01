@@ -3,7 +3,7 @@ package tui
 import (
 	"testing"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 func TestHandleRecallFromHistory_UsesHighlightedEntryWithoutDuplicatingRolls(t *testing.T) {

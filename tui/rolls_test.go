@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/showr/dice-roller/dice"
-	"github.com/showr/dice-roller/internal/presentation"
+	"github.com/BeastHome/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/internal/presentation"
 )
 
 type stubStore struct {

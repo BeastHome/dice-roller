@@ -3,7 +3,7 @@ package tui
 import (
 	"fmt"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 // ------------------------------------------------------------

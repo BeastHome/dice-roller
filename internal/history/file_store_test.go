@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 func newSessionInTempDir(t *testing.T) (*FileStore, string) {

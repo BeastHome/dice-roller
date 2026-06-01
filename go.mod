@@ -1,4 +1,4 @@
-module github.com/showr/dice-roller
+module github.com/BeastHome/dice-roller
 
 go 1.24.2
 

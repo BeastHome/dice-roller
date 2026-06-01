@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/showr/dice-roller/dice"
-	"github.com/showr/dice-roller/internal/parse"
-	"github.com/showr/dice-roller/internal/presentation"
+	"github.com/BeastHome/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/internal/parse"
+	"github.com/BeastHome/dice-roller/internal/presentation"
 )
 
 // PrintHelp writes the CLI help text to w.

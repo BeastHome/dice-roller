@@ -3,7 +3,7 @@ package tui
 import (
 	"testing"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 func TestMoveSelectedOutputRoll_ChangesWithinBounds(t *testing.T) {

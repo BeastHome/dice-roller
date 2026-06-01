@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/showr/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/dice"
 )
 
 // FileStore implements Store using JSON files on disk.

@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/showr/dice-roller/cmd/cli"
-	"github.com/showr/dice-roller/dice"
-	"github.com/showr/dice-roller/tui"
+	"github.com/BeastHome/dice-roller/cmd/cli"
+	"github.com/BeastHome/dice-roller/dice"
+	"github.com/BeastHome/dice-roller/tui"
 )
 
 func main() {
