@@ -55,6 +55,7 @@ func TestLex_KeepDropRerollModifierTokens(t *testing.T) {
 		want  []TokenType
 	}{
 		{"4d6k3", []TokenType{TokenNumber, TokenDice, TokenNumber, TokenKeep, TokenNumber, TokenEOF}},
+		{"4d6kh3", []TokenType{TokenNumber, TokenDice, TokenNumber, TokenKeep, TokenNumber, TokenEOF}},
 		{"4d6kl2", []TokenType{TokenNumber, TokenDice, TokenNumber, TokenKeepLow, TokenNumber, TokenEOF}},
 		{"4d6dh1", []TokenType{TokenNumber, TokenDice, TokenNumber, TokenDropHigh, TokenNumber, TokenEOF}},
 		{"4d6dl1", []TokenType{TokenNumber, TokenDice, TokenNumber, TokenDropLow, TokenNumber, TokenEOF}},

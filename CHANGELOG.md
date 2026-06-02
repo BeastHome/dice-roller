@@ -79,6 +79,13 @@ and a handful of latent bugs are fixed.
 
 ### Fixed
 
+- **Explicit keep-high form `NdXkhY` now parses.** The lexer and legacy
+  parser handled `kl` (keep-low) but not its mirror `kh` (keep-high),
+  so `2d20kh1` — an advantage roll, and an example in the CLI `--help`
+  text and README — failed with `parse error: expected number after
+  "k"`. `kh` is now accepted as an explicit synonym for bare `k`
+  (keep-high). A CLI test asserts every help-text example expression
+  evaluates, to keep advertised syntax honest.
 - **`compound explode` (`NdX!!`) is bounded at 1000 expansions per
   roll.** Under adversarial or degenerate RNGs (e.g., `1d1!!`, which
   always rolls the max) the previous implementation would loop

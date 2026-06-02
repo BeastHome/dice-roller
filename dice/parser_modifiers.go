@@ -73,6 +73,10 @@ func parseExplodeModifier(rest string) (Modifier, int, bool, error) {
 
 func parseKeepDropModifier(rest string) (Modifier, int, bool, error) {
 	switch {
+	case strings.HasPrefix(rest, "kh"):
+		// Explicit keep-high form; same semantics as bare "k".
+		mod, consumed, err := parseCountModifier(rest, "kh", ModKeepHigh)
+		return mod, consumed, true, err
 	case strings.HasPrefix(rest, "kl"):
 		mod, consumed, err := parseCountModifier(rest, "kl", ModKeepLow)
 		return mod, consumed, true, err

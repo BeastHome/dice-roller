@@ -120,6 +120,10 @@ func (l *lexer) readWordToken() (Token, error) {
 	remaining := strings.ToLower(l.input[l.pos:])
 
 	switch {
+	case strings.HasPrefix(remaining, "kh"):
+		// Explicit keep-high form; same semantics as bare "k".
+		l.pos += 2
+		return Token{Type: TokenKeep, Lexeme: l.input[start:l.pos], Pos: start}, nil
 	case strings.HasPrefix(remaining, "kl"):
 		l.pos += 2
 		return Token{Type: TokenKeepLow, Lexeme: l.input[start:l.pos], Pos: start}, nil

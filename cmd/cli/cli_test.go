@@ -124,6 +124,31 @@ func TestRunCLI_MultiModeProducesMultiSummary(t *testing.T) {
 	}
 }
 
+func TestRunCLI_HelpTextExampleExpressionsAllEvaluate(t *testing.T) {
+	// Every expression shown in PrintHelp's Examples section must actually
+	// evaluate — otherwise the help is advertising broken syntax. This is
+	// the regression guard for the 2d20kh1 keep-high parser bug.
+	examples := []string{
+		"4d6k3",
+		"2d20kh1",
+		"3d8!",
+		"5d10>=8",
+		"5d10ro1>=8",
+	}
+	for _, expr := range examples {
+		t.Run(expr, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			code := RunCLI([]string{expr, "--seed", "1", "--no-color"}, &stdout, &stderr)
+			if code != 0 {
+				t.Fatalf("help example %q failed: code=%d stderr=%q", expr, code, stderr.String())
+			}
+			if stderr.Len() != 0 {
+				t.Fatalf("help example %q wrote to stderr: %q", expr, stderr.String())
+			}
+		})
+	}
+}
+
 func TestRunCLI_VerboseModeIncludesDetailLines(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	args := []string{"4d6k3", "--verbose", "--seed", "1", "--no-color"}

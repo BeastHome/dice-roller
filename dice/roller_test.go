@@ -73,6 +73,64 @@ func TestEvaluateSingle_KeepHighest(t *testing.T) {
 	}
 }
 
+func TestEngineRoll_ExplicitKeepHighEqualsBareKeep(t *testing.T) {
+	// "kh" is the explicit keep-high form; it must behave identically to
+	// bare "k". Regression test for the parser bug where "kh" failed with
+	// "expected number after k" (it's advertised in --help and README).
+	bare := NewEngineWithSeed(123)
+	explicit := NewEngineWithSeed(123)
+
+	rb, err := bare.RollOnce("4d6k3")
+	if err != nil {
+		t.Fatalf("4d6k3 returned error: %v", err)
+	}
+	re, err := explicit.RollOnce("4d6kh3")
+	if err != nil {
+		t.Fatalf("4d6kh3 returned error: %v", err)
+	}
+
+	if rb.Total != re.Total {
+		t.Fatalf("kh should equal k: 4d6k3 total=%d but 4d6kh3 total=%d", rb.Total, re.Total)
+	}
+	if len(re.Kept) != 3 || len(re.Dropped) != 1 {
+		t.Fatalf("4d6kh3 expected 3 kept + 1 dropped, got %d/%d", len(re.Kept), len(re.Dropped))
+	}
+	for _, k := range re.Kept {
+		for _, d := range re.Dropped {
+			if k < d {
+				t.Fatalf("kept %d lower than dropped %d (kept=%v dropped=%v)", k, d, re.Kept, re.Dropped)
+			}
+		}
+	}
+}
+
+func TestEngineRoll_AdvantageAndDisadvantageForms(t *testing.T) {
+	// The advantage/disadvantage idioms documented in EMBEDDING.md.
+	engine := NewEngineWithSeed(7)
+
+	adv, err := engine.RollOnce("2d20kh1")
+	if err != nil {
+		t.Fatalf("2d20kh1 (advantage) returned error: %v", err)
+	}
+	if len(adv.Kept) != 1 || len(adv.Dropped) != 1 {
+		t.Fatalf("advantage expected 1 kept + 1 dropped, got %d/%d", len(adv.Kept), len(adv.Dropped))
+	}
+	if adv.Kept[0] < adv.Dropped[0] {
+		t.Fatalf("advantage kept the lower die: kept=%v dropped=%v", adv.Kept, adv.Dropped)
+	}
+
+	dis, err := engine.RollOnce("2d20kl1")
+	if err != nil {
+		t.Fatalf("2d20kl1 (disadvantage) returned error: %v", err)
+	}
+	if len(dis.Kept) != 1 || len(dis.Dropped) != 1 {
+		t.Fatalf("disadvantage expected 1 kept + 1 dropped, got %d/%d", len(dis.Kept), len(dis.Dropped))
+	}
+	if dis.Kept[0] > dis.Dropped[0] {
+		t.Fatalf("disadvantage kept the higher die: kept=%v dropped=%v", dis.Kept, dis.Dropped)
+	}
+}
+
 func TestEvaluateSingle_KeepLowest(t *testing.T) {
 	rng := newSeededRNG(3)
 	expr := Expression{
